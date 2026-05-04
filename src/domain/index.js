@@ -116,4 +116,17 @@ export function isGameWon(game) {
 	return game ? assertGame(game).getSudoku().isSolved() : false;
 }
 
-export { Sudoku, Game };
+export function findSelectHint(game, pos) {
+	if (!game || !isValidGamePosition(pos) || !isEditableCell(game, pos)) {
+		return null;
+	}
+
+	const result = game.numbers_to_select(pos);
+	return result.length > 0 ? result : null;
+}
+
+export function findNextStepHint(game) {
+	return game.next_step_hint();
+}
+
+export { Sudoku, Game }; 

@@ -4,6 +4,7 @@
 	import { modal } from '@sudoku/stores/modal';
 	import { gameWon } from '@sudoku/gamestore';
 	import Board from './components/Board/index.svelte';
+	import HintSidebar from './components/HintSidebar.svelte';
 	import Controls from './components/Controls/index.svelte';
 	import Header from './components/Header/index.svelte';
 	import Modal from './components/Modal/index.svelte';
@@ -41,6 +42,8 @@
 <section>
 	<Board />
 </section>
+
+<HintSidebar />
 
 <!-- Keyboard -->
 <footer>

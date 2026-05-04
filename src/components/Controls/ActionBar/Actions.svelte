@@ -2,20 +2,25 @@
 	import { candidates } from '@sudoku/stores/candidates';
 	import { gameStore, gameView } from '@sudoku/gamestore';
 	import { cursor } from '@sudoku/stores/cursor';
+	import { hintPanel } from '@sudoku/stores/hintPanel';
 	import { hints } from '@sudoku/stores/hints';
 	import { notes } from '@sudoku/stores/notes';
 	import { settings } from '@sudoku/stores/settings';
 	import { keyboardDisabled } from '@sudoku/stores/keyboard';
 	import { gamePaused } from '@sudoku/gamestore';
 
+	$: hasSelection = $cursor.x !== null && $cursor.y !== null;
 	$: hintsAvailable = $hints > 0;
 	$: currentCellValue =
 		$cursor.x === null || $cursor.y === null
 			? null
 			: $gameView.grid[$cursor.y][$cursor.x];
+	$: selectHint = hasSelection && $gameView ? gameStore.getSelectHint($cursor) : null;
+	$: nextStepHint = $gameView ? gameStore.getNextStepHint() : null;
 	$: canUndo = !$gamePaused && $gameView.canUndo;
 	$: canRedo = !$gamePaused && $gameView.canRedo;
 	$: canHint = !$keyboardDisabled && hintsAvailable && currentCellValue !== null && gameStore.canHint($cursor);
+	$: canShowSelectHint = !$gamePaused && hasSelection;
 
 	function handleUndo() {
 		if (canUndo) {
@@ -38,6 +43,18 @@
 			gameStore.applyHint($cursor);
 		}
 	}
+
+	function handleSelectHint() {
+		if (canShowSelectHint) {
+			hintPanel.showSelectHint($cursor, selectHint);
+		}
+	}
+
+	function handleNextStepHint() {
+		if (!$gamePaused) {
+			hintPanel.showNextStepHint(nextStepHint);
+		}
+	}
 </script>
 
 <div class="action-buttons space-x-3">
@@ -51,6 +68,18 @@
 	<button class="btn btn-round" disabled={!canRedo} on:click={handleRedo} title="Redo">
 		<svg class="icon-outline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 10h-10a8 8 90 00-8 8v2M21 10l-6 6m6-6l-6-6" />
+		</svg>
+	</button>
+
+	<button class="btn btn-round" on:click={handleNextStepHint} title="Show next step hint">
+		<svg class="icon-outline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m0 0l-4-4m4 4l-4 4" />
+		</svg>
+	</button>
+
+	<button class="btn btn-round" disabled={!canShowSelectHint} on:click={handleSelectHint} title="Show selected cell hint">
+		<svg class="icon-outline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h12M4 18h8" />
 		</svg>
 	</button>
 
