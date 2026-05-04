@@ -1,11 +1,11 @@
 <script>
 	import { BOX_SIZE } from '@sudoku/constants';
-	import { gamePaused } from '@sudoku/stores/game';
-	import { grid, userGrid, invalidCells } from '@sudoku/stores/grid';
+	import { gamePaused, gameView } from '@sudoku/gamestore';
 	import { settings } from '@sudoku/stores/settings';
 	import { cursor } from '@sudoku/stores/cursor';
 	import { candidates } from '@sudoku/stores/candidates';
 	import Cell from './Cell.svelte';
+	
 
 	function isSelected(cursorStore, x, y) {
 		return cursorStore.x === x && cursorStore.y === y;
@@ -22,10 +22,10 @@
 		return (cursorBoxX === cellBoxX && cursorBoxY === cellBoxY);
 	}
 
-	function getValueAtCursor(gridStore, cursorStore) {
+	function getValueAtCursor(cursorStore, grid) {
 		if (cursorStore.x === null && cursorStore.y === null) return null;
 
-		return gridStore[cursorStore.y][cursorStore.x];
+		return grid[cursorStore.y][cursorStore.x];
 	}
 </script>
 
@@ -36,8 +36,7 @@
 	<div class="board-padding absolute inset-0 flex justify-center">
 
 		<div class="bg-white shadow-2xl rounded-xl overflow-hidden w-full h-full max-w-xl grid" class:bg-gray-200={$gamePaused}>
-
-			{#each $userGrid as row, y}
+			{#each $gameView.grid as row, y}
 				{#each row as value, x}
 					<Cell {value}
 					      cellY={y + 1}
@@ -45,13 +44,12 @@
 					      candidates={$candidates[x + ',' + y]}
 					      disabled={$gamePaused}
 					      selected={isSelected($cursor, x, y)}
-					      userNumber={$grid[y][x] === 0}
+					      userNumber={$gameView.editableGrid[y][x] && value !== 0}
 					      sameArea={$settings.highlightCells && !isSelected($cursor, x, y) && isSameArea($cursor, x, y)}
-					      sameNumber={$settings.highlightSame && value && !isSelected($cursor, x, y) && getValueAtCursor($userGrid, $cursor) === value}
-					      conflictingNumber={$settings.highlightConflicting && $grid[y][x] === 0 && $invalidCells.includes(x + ',' + y)} />
+					      sameNumber={$settings.highlightSame && value && !isSelected($cursor, x, y) && getValueAtCursor($cursor, $gameView.grid) === value}
+					    	/>
 				{/each}
 			{/each}
-
 		</div>
 
 	</div>
