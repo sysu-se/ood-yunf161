@@ -1,6 +1,8 @@
 <script>
 	import { candidates } from '@sudoku/stores/candidates';
 	import { gameStore, gameView } from '@sudoku/gamestore';
+	import { pauseGame, resumeGame } from '@sudoku/game';
+	import { modal } from '@sudoku/stores/modal';
 	import { cursor } from '@sudoku/stores/cursor';
 	import { hintPanel } from '@sudoku/stores/hintPanel';
 	import { hints } from '@sudoku/stores/hints';
@@ -21,6 +23,9 @@
 	$: canRedo = !$gamePaused && $gameView.canRedo;
 	$: canHint = !$keyboardDisabled && hintsAvailable && currentCellValue !== null && gameStore.canHint($cursor);
 	$: canShowSelectHint = !$gamePaused && hasSelection;
+	$: isExploring = $gameView?.isExploring ?? false;
+	$: canStartExploration = !$gamePaused && !isExploring && gameStore.canBeginExploration();
+	$: canFinishExploration = !$gamePaused && isExploring;
 
 	function handleUndo() {
 		if (canUndo) {
@@ -55,6 +60,32 @@
 			hintPanel.showNextStepHint(nextStepHint);
 		}
 	}
+
+	function handleExploration() {
+		if (canStartExploration) {
+			gameStore.beginExploration();
+			return;
+		}
+
+		if (!canFinishExploration) {
+			return;
+		}
+
+		pauseGame();
+		modal.show('exploreDecision', {
+			title: '结束探索模式',
+			text: '你可以接受当前探索结果，或者放弃这次探索并回到起点。',
+			acceptButton: '接受当前结果',
+			rejectButton: '放弃本次探索',
+			onHide: resumeGame,
+			onAccept: () => {
+				gameStore.acceptExploration();
+			},
+			onReject: () => {
+				gameStore.rejectExploration();
+			}
+		});
+	}
 </script>
 
 <div class="action-buttons space-x-3">
@@ -81,6 +112,14 @@
 		<svg class="icon-outline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h12M4 18h8" />
 		</svg>
+	</button>
+
+	<button class="btn btn-round btn-badge" disabled={!canStartExploration && !canFinishExploration} on:click={handleExploration} title={isExploring ? '结束探索模式' : '开始探索模式'}>
+		<svg class="icon-outline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h7l2 3h7M6 17l4-4-4-4m8 8l4-4-4-4" />
+		</svg>
+
+		<span class="badge tracking-tighter" class:badge-primary={isExploring}>{isExploring ? 'EXP' : 'TRY'}</span>
 	</button>
 
 	<button class="btn btn-round btn-badge" disabled={!canHint} on:click={handleHint} title="Hints ({$hints})">

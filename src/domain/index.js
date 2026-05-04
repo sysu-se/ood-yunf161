@@ -87,6 +87,9 @@ export function projectGame(game) {
 		canUndo: canUndoGame(game),
 		canRedo: canRedoGame(game),
 		isWon: isGameWon(game),
+		isExploring: isGameExploring(game),
+		isFailed: isGameFailed(game),
+		isBlacklisted: isGameBlacklisted(game),
 	};
 }
 
@@ -129,4 +132,34 @@ export function findNextStepHint(game) {
 	return game.next_step_hint();
 }
 
+export function beginExplorationGame(game) {
+	return assertGame(game).begin_exploration();
+}
+
+export function acceptExplorationGame(game) {
+	return assertGame(game).accept_exploration();
+}
+
+export function rejectExplorationGame(game) {
+	return assertGame(game).reject_exploration();
+}
+
+export function canBeginExploration(game) {
+	return game ? assertGame(game).can_explore() : false;
+}
+
+export function isGameExploring(game) {
+	return game ? assertGame(game).is_exploring() : false;
+}
+
+export function isGameFailed(game) {
+	return game ? assertGame(game).is_failed() : false;
+}
+
+export function isGameBlacklisted(game) {
+	return game ? assertGame(game).is_blacklisted() : false;
+}
+
+
+ 
 export { Sudoku, Game }; 
