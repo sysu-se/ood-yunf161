@@ -24,8 +24,7 @@ export function createSudokuFromJSON(json) {
 }
 
 export function createGame({ sudoku } = {}) {
-	const grid = sudoku instanceof Sudoku ? sudoku.getGrid() : sudoku;
-	return new Game(grid);
+	return new Game(sudoku);
 }
 
 export function createGameFromJSON(json) {
